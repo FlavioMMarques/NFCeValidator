@@ -35,7 +35,7 @@ namespace NFCeValidator.Data
 
         public NFCeInfo GetDadosNFCeCompleto(string numeroNFCe, string nomeView = "vw_NFCe")
         {
-            return GetDadosNFCeCompleto(numeroNFCe, nomeView, null, null, "");
+            return GetDadosNFCeCompleto(numeroNFCe, nomeView, null, null, "","");
         }
 
         public List<string> GetEmpresas()
@@ -71,8 +71,7 @@ namespace NFCeValidator.Data
 
             return empresas;
         }
-
-        public NFCeInfo GetDadosNFCeCompleto(string numeroNFCe, string nomeView, DateTime? dataInicial, DateTime? dataFinal, string Loja)
+        public NFCeInfo GetDadosNFCeCompleto(string numeroNFCe, string nomeView, DateTime? dataInicial, DateTime? dataFinal, string Loja, string Serie)
         {
             try
             {
@@ -91,6 +90,10 @@ namespace NFCeValidator.Data
                 FROM {nomeView}
                 WHERE NumeroNFCe = @NumeroNFCe";
 
+                    // Filtro de série
+                    if (!string.IsNullOrEmpty(Serie))
+                        query += " AND Serie = @Serie";
+
                     // Filtro de período
                     if (dataInicial.HasValue && dataFinal.HasValue)
                         query += " AND DataEmissao BETWEEN @DataInicial AND @DataFinal";
@@ -107,12 +110,18 @@ namespace NFCeValidator.Data
                         else
                             throw new Exception("O valor de NumeroNFCe não é um número válido.");
 
+                        // Parâmetro da série
+                        if (!string.IsNullOrEmpty(Serie))
+                            cmd.Parameters.Add("@Serie", SqlDbType.VarChar).Value = Serie;
+
+                        // Parâmetros de data
                         if (dataInicial.HasValue && dataFinal.HasValue)
                         {
                             cmd.Parameters.Add("@DataInicial", SqlDbType.DateTime).Value = dataInicial.Value.Date;
                             cmd.Parameters.Add("@DataFinal", SqlDbType.DateTime).Value = dataFinal.Value.Date.AddDays(1).AddSeconds(-1);
                         }
 
+                        // Parâmetro de loja
                         if (!string.IsNullOrEmpty(Loja))
                             cmd.Parameters.Add("@LojaOrigem", SqlDbType.VarChar).Value = Loja;
 
@@ -172,8 +181,7 @@ namespace NFCeValidator.Data
             }
         }
 
-
-        //public NFCeInfo GetDadosNFCeCompleto(string numeroNFCe, string nomeView, DateTime? dataInicial, DateTime? dataFinal, string Loja)
+        //public NFCeInfo GetDadosNFCeCompleto(string numeroNFCe, string nomeView, DateTime? dataInicial, DateTime? dataFinal, string Loja, string Serie)
         //{
         //    try
         //    {
@@ -182,76 +190,90 @@ namespace NFCeValidator.Data
         //            conn.Open();
 
         //            string query = $@"
-        //                SELECT TOP 1 
-        //                    NumeroNFCe,
-        //                    ValorTotal,
-        //                    DataEmissao,
-        //                    CFOP,
-        //                    DocumentoDestinatario,
-        //                    Status
-        //                FROM {nomeView} 
-        //                WHERE NumeroNFCe = @NumeroNFCe";
+        //        SELECT TOP 1 
+        //            NumeroNFCe,
+        //            ValorTotal,
+        //            DataEmissao,
+        //            CFOP,
+        //            DocumentoDestinatario,
+        //            Status,
 
-        //            // Adicionar filtro de período se fornecido
+        //        FROM {nomeView}
+        //        WHERE NumeroNFCe = @NumeroNFCe";
+
+        //            // Filtro de período
         //            if (dataInicial.HasValue && dataFinal.HasValue)
-        //            {
-        //                query += " AND DataEmissao BETWEEN '@DataInicial' AND '@DataFinal'";
-        //            }
-        //            if (Loja != "")
-        //            {
-        //                query += " AND LojaOrigem = '@LojaOrigem'";
-        //            }
+        //                query += " AND DataEmissao BETWEEN @DataInicial AND @DataFinal";
+
+        //            // Filtro por loja
+        //            if (!string.IsNullOrEmpty(Loja))
+        //                query += " AND LojaOrigem = @LojaOrigem";
 
         //            using (SqlCommand cmd = new SqlCommand(query, conn))
         //            {
-        //                cmd.Parameters.AddWithValue("@NumeroNFCe", numeroNFCe);
+        //                // Conversão segura: string -> int
+        //                if (int.TryParse(numeroNFCe, out int numeroInt))
+        //                    cmd.Parameters.Add("@NumeroNFCe", SqlDbType.Int).Value = numeroInt;
+        //                else
+        //                    throw new Exception("O valor de NumeroNFCe não é um número válido.");
 
         //                if (dataInicial.HasValue && dataFinal.HasValue)
         //                {
-        //                    cmd.Parameters.AddWithValue("@DataInicial", dataInicial.Value.Date);
-        //                    cmd.Parameters.AddWithValue("@DataFinal", dataFinal.Value.Date.AddDays(1).AddSeconds(-1)); // Até 23:59:59
-
+        //                    cmd.Parameters.Add("@DataInicial", SqlDbType.DateTime).Value = dataInicial.Value.Date;
+        //                    cmd.Parameters.Add("@DataFinal", SqlDbType.DateTime).Value = dataFinal.Value.Date.AddDays(1).AddSeconds(-1);
         //                }
-        //                if (Loja != "")
-        //                {
-        //                    cmd.Parameters.AddWithValue("@LojaOrigem", Loja);
-        //                }
-        //                {
-        //                    //cmd.Parameters.AddWithValue("@NumeroNFCe", numeroNFCe);
 
-        //                    using (SqlDataReader reader = cmd.ExecuteReader())
+        //                if (!string.IsNullOrEmpty(Loja))
+        //                    cmd.Parameters.Add("@LojaOrigem", SqlDbType.VarChar).Value = Loja;
+
+        //                // 🔍 Visualização da query com substituição dos parâmetros
+        //                string queryDebug = query;
+        //                foreach (SqlParameter p in cmd.Parameters)
+        //                {
+        //                    string valorFormatado;
+        //                    if (p.Value == DBNull.Value || p.Value == null)
+        //                        valorFormatado = "NULL";
+        //                    else if (p.SqlDbType == SqlDbType.VarChar || p.SqlDbType == SqlDbType.NVarChar)
+        //                        valorFormatado = $"'{p.Value.ToString().Replace("'", "''")}'";
+        //                    else if (p.SqlDbType == SqlDbType.DateTime)
+        //                        valorFormatado = $"'{((DateTime)p.Value):dd-MM-yyyy HH:mm:ss}'";
+        //                    else
+        //                        valorFormatado = p.Value.ToString();
+
+        //                    queryDebug = queryDebug.Replace(p.ParameterName, valorFormatado);
+        //                }
+
+        //                //Console.WriteLine("🔎 Query enviada ao SQL:");
+        //                //Console.WriteLine(queryDebug);
+        //                //Console.WriteLine();
+
+        //                using (SqlDataReader reader = cmd.ExecuteReader())
+        //                {
+        //                    if (reader.Read())
         //                    {
-        //                        if (reader.Read())
-        //                        {
-        //                            NFCeInfo info = new NFCeInfo();
+        //                        NFCeInfo info = new NFCeInfo();
 
-        //                            // Valor
-        //                            if (!reader.IsDBNull(reader.GetOrdinal("ValorTotal")))
-        //                                info.ValorNaView = reader.GetDecimal(reader.GetOrdinal("ValorTotal"));
+        //                        if (!reader.IsDBNull(reader.GetOrdinal("ValorTotal")))
+        //                            info.ValorNaView = reader.GetDecimal(reader.GetOrdinal("ValorTotal"));
 
-        //                            // Data
-        //                            if (!reader.IsDBNull(reader.GetOrdinal("DataEmissao")))
-        //                                info.DataNaView = reader.GetDateTime(reader.GetOrdinal("DataEmissao"));
+        //                        if (!reader.IsDBNull(reader.GetOrdinal("DataEmissao")))
+        //                            info.DataNaView = reader.GetDateTime(reader.GetOrdinal("DataEmissao"));
 
-        //                            // CFOP
-        //                            if (!reader.IsDBNull(reader.GetOrdinal("CFOP")))
-        //                                info.CFOPNaView = reader.GetString(reader.GetOrdinal("CFOP")).Trim();
+        //                        if (!reader.IsDBNull(reader.GetOrdinal("CFOP")))
+        //                            info.CFOPNaView = reader.GetString(reader.GetOrdinal("CFOP")).Trim();
 
-        //                            // Documento
-        //                            if (!reader.IsDBNull(reader.GetOrdinal("DocumentoDestinatario")))
-        //                                info.DocumentoNaView = reader.GetString(reader.GetOrdinal("DocumentoDestinatario")).Trim();
+        //                        if (!reader.IsDBNull(reader.GetOrdinal("DocumentoDestinatario")))
+        //                            info.DocumentoNaView = reader.GetString(reader.GetOrdinal("DocumentoDestinatario")).Trim();
 
-        //                            // Status
-        //                            if (!reader.IsDBNull(reader.GetOrdinal("Status")))
-        //                                info.StatusNaView = reader.GetString(reader.GetOrdinal("Status")).Trim();
+        //                        if (!reader.IsDBNull(reader.GetOrdinal("Status")))
+        //                            info.StatusNaView = reader.GetString(reader.GetOrdinal("Status")).Trim();
 
-        //                            return info;
-        //                        }
+        //                        return info;
         //                    }
         //                }
         //            }
 
-        //            return null; // Não encontrado
+        //            return null;
         //        }
         //    }
         //    catch (Exception ex)
@@ -259,6 +281,8 @@ namespace NFCeValidator.Data
         //        throw new Exception($"Erro ao buscar dados completos na view: {ex.Message}");
         //    }
         //}
+
+
 
         public bool ExisteNFCeNaView(string numeroNFCe, string nomeView = "vw_NFCe")
         {

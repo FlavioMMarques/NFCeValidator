@@ -140,6 +140,8 @@ namespace NFCeValidator.Forms
             this.dgvXML.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvXML.Size = new System.Drawing.Size(719, 331);
             this.dgvXML.TabIndex = 0;
+            
+            
             // 
             // groupBox5
             // 

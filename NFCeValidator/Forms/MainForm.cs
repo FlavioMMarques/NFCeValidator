@@ -57,7 +57,7 @@ namespace NFCeValidator.Forms
             dgvXML.ReadOnly = true;
             dgvXML.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvXML.MultiSelect = false;
-
+            dgvXML.CellDoubleClick += dgvXML_CellDoubleClick;
             // Configurar grade da View
             dgvView.AutoGenerateColumns = false;
             dgvView.AllowUserToAddRows = false;
@@ -147,7 +147,7 @@ namespace NFCeValidator.Forms
             dgvView.Columns.Add(colStatusView);
         }
 
-        private void DgvNotas_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        private void dgvXML_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
             {
@@ -317,7 +317,7 @@ namespace NFCeValidator.Forms
                         DateTime dataFinal = dtpDataFinal.Value.Date;
 
                         // Buscar dados completos da view com filtro de período
-                        NFCeInfo dadosView = _repository.GetDadosNFCeCompleto(nota.NumeroNFCe, txtNomeView.Text, dataInicial, dataFinal, cmbLoja.Text);
+                        NFCeInfo dadosView = _repository.GetDadosNFCeCompleto(nota.NumeroNFCe, txtNomeView.Text, dataInicial, dataFinal, cmbLoja.Text,nota.Serie);
 
                         if (dadosView != null)
                         {
