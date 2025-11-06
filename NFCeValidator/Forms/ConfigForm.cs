@@ -7,7 +7,7 @@ namespace NFCeValidator.Forms
 {
     public partial class ConfigForm : Form
     {
-        private NFCeRepository _repository;
+        //private NFCeRepository _repository;
         public ConfigForm()
         {
             InitializeComponent();
@@ -265,7 +265,7 @@ namespace NFCeValidator.Forms
                 {
                     MessageBox.Show("Conexão realizada com sucesso!", "Sucesso",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    _repository.VerificarECriarView();
+                    //_repository.VerificarECriarView();
                 }
                 else
                 {
