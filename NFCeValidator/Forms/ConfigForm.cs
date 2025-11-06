@@ -265,7 +265,7 @@ namespace NFCeValidator.Forms
                 {
                     MessageBox.Show("Conexão realizada com sucesso!", "Sucesso",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    //_repository.VerificarECriarView();
+                    repo.VerificarECriarView();
                 }
                 else
                 {

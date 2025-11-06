@@ -31,11 +31,11 @@ namespace NFCeValidator.Data
                 return false;
             }
         }
-        
+
 
         public NFCeInfo GetDadosNFCeCompleto(string numeroNFCe, string nomeView = "vw_NFCe")
         {
-            return GetDadosNFCeCompleto(numeroNFCe, nomeView, null, null, "","");
+            return GetDadosNFCeCompleto(numeroNFCe, nomeView, null, null, "", "");
         }
 
         public List<string> GetEmpresas()
@@ -181,108 +181,6 @@ namespace NFCeValidator.Data
             }
         }
 
-        //public NFCeInfo GetDadosNFCeCompleto(string numeroNFCe, string nomeView, DateTime? dataInicial, DateTime? dataFinal, string Loja, string Serie)
-        //{
-        //    try
-        //    {
-        //        using (SqlConnection conn = new SqlConnection(_connectionString))
-        //        {
-        //            conn.Open();
-
-        //            string query = $@"
-        //        SELECT TOP 1 
-        //            NumeroNFCe,
-        //            ValorTotal,
-        //            DataEmissao,
-        //            CFOP,
-        //            DocumentoDestinatario,
-        //            Status,
-
-        //        FROM {nomeView}
-        //        WHERE NumeroNFCe = @NumeroNFCe";
-
-        //            // Filtro de período
-        //            if (dataInicial.HasValue && dataFinal.HasValue)
-        //                query += " AND DataEmissao BETWEEN @DataInicial AND @DataFinal";
-
-        //            // Filtro por loja
-        //            if (!string.IsNullOrEmpty(Loja))
-        //                query += " AND LojaOrigem = @LojaOrigem";
-
-        //            using (SqlCommand cmd = new SqlCommand(query, conn))
-        //            {
-        //                // Conversão segura: string -> int
-        //                if (int.TryParse(numeroNFCe, out int numeroInt))
-        //                    cmd.Parameters.Add("@NumeroNFCe", SqlDbType.Int).Value = numeroInt;
-        //                else
-        //                    throw new Exception("O valor de NumeroNFCe não é um número válido.");
-
-        //                if (dataInicial.HasValue && dataFinal.HasValue)
-        //                {
-        //                    cmd.Parameters.Add("@DataInicial", SqlDbType.DateTime).Value = dataInicial.Value.Date;
-        //                    cmd.Parameters.Add("@DataFinal", SqlDbType.DateTime).Value = dataFinal.Value.Date.AddDays(1).AddSeconds(-1);
-        //                }
-
-        //                if (!string.IsNullOrEmpty(Loja))
-        //                    cmd.Parameters.Add("@LojaOrigem", SqlDbType.VarChar).Value = Loja;
-
-        //                // 🔍 Visualização da query com substituição dos parâmetros
-        //                string queryDebug = query;
-        //                foreach (SqlParameter p in cmd.Parameters)
-        //                {
-        //                    string valorFormatado;
-        //                    if (p.Value == DBNull.Value || p.Value == null)
-        //                        valorFormatado = "NULL";
-        //                    else if (p.SqlDbType == SqlDbType.VarChar || p.SqlDbType == SqlDbType.NVarChar)
-        //                        valorFormatado = $"'{p.Value.ToString().Replace("'", "''")}'";
-        //                    else if (p.SqlDbType == SqlDbType.DateTime)
-        //                        valorFormatado = $"'{((DateTime)p.Value):dd-MM-yyyy HH:mm:ss}'";
-        //                    else
-        //                        valorFormatado = p.Value.ToString();
-
-        //                    queryDebug = queryDebug.Replace(p.ParameterName, valorFormatado);
-        //                }
-
-        //                //Console.WriteLine("🔎 Query enviada ao SQL:");
-        //                //Console.WriteLine(queryDebug);
-        //                //Console.WriteLine();
-
-        //                using (SqlDataReader reader = cmd.ExecuteReader())
-        //                {
-        //                    if (reader.Read())
-        //                    {
-        //                        NFCeInfo info = new NFCeInfo();
-
-        //                        if (!reader.IsDBNull(reader.GetOrdinal("ValorTotal")))
-        //                            info.ValorNaView = reader.GetDecimal(reader.GetOrdinal("ValorTotal"));
-
-        //                        if (!reader.IsDBNull(reader.GetOrdinal("DataEmissao")))
-        //                            info.DataNaView = reader.GetDateTime(reader.GetOrdinal("DataEmissao"));
-
-        //                        if (!reader.IsDBNull(reader.GetOrdinal("CFOP")))
-        //                            info.CFOPNaView = reader.GetString(reader.GetOrdinal("CFOP")).Trim();
-
-        //                        if (!reader.IsDBNull(reader.GetOrdinal("DocumentoDestinatario")))
-        //                            info.DocumentoNaView = reader.GetString(reader.GetOrdinal("DocumentoDestinatario")).Trim();
-
-        //                        if (!reader.IsDBNull(reader.GetOrdinal("Status")))
-        //                            info.StatusNaView = reader.GetString(reader.GetOrdinal("Status")).Trim();
-
-        //                        return info;
-        //                    }
-        //                }
-        //            }
-
-        //            return null;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception($"Erro ao buscar dados completos na view: {ex.Message}");
-        //    }
-        //}
-
-
 
         public bool ExisteNFCeNaView(string numeroNFCe, string nomeView = "vw_NFCe")
         {
@@ -389,8 +287,9 @@ namespace NFCeValidator.Data
                     if (Loja != "")
                     {
                         query += " AND LojaOrigem = @LojaOrigem ORDER BY NumeroNFCe";
-                    }else
-                                           {
+                    }
+                    else
+                    {
                         query += " ORDER BY NumeroNFCe";
                     }
 
@@ -441,123 +340,132 @@ namespace NFCeValidator.Data
         IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_NAME = @nomeView)
         BEGIN
             EXEC('
-                CREATE VIEW vw_NFCe AS
+                CREATE VIEW [dbo].[vw_NFCe]
+                AS
                 SELECT 
-                    [Código da Venda], 
-                    [Data da Venda] AS DataEmissao, 
-                    [Código do Cliente], 
-                    [Nome do Cliente], 
-                    Nome, 
-                    Cancelado AS Status, 
-                    [Nº da Duplicata], 
-                    LojaOrigem, 
-                    Vendedor, 
-                    Vendedor_Cliente, 
-                    Comissao_Vendedor, 
-                    Turno, 
-                    UsuarioCaixaCod, 
-                    SerieECF, 
-                    Lancamento_Usuario, 
-                    Lancamento_DataHora, 
-                    Consignacao, 
-                    Area, 
-                    Bairro, 
-                    Cidade, 
-                    Obs, 
-                    [Dt Cadastro], 
-                    NumeroDAV, 
-                    Setor, 
-                    descontar AS DescontoV, 
-                    QtdPessoas, 
-                    QtdComandas, 
-                    COUNT(CodigoItem) AS QuantProdutos, 
-                    CONVERT(DECIMAL(10, 2), SUM(Total_Item)) AS ValorTotal, 
-                    SUM(Quantidade_Item) AS QuantItens, 
-                    Veiculo_Placa, 
-                    TEFCV, 
-                    CodigoOS, 
-                    Origem, 
-                    NFCe_NRO AS NumeroNFCe, 
-                    NFCe_Serie AS Serie, 
-                    NFCe_Chave, 
-                    NFCe_TipoEmissao, 
-                    NFCe_Data, 
-                    Estornado, 
-                    [Razão Social], 
-                    NFeNum, 
-                    NFSe_Numero, 
-                    Impressa, 
-                    Liberado, 
-                    BoletoImpresso, 
-                    PossuiEntrega, 
-                    PossuiRetirada, 
-                    Marketplace_Status, 
-                    Marketplace_OrderNumber, 
-                    SUM(vFreteItem) AS vFreteItem, 
-                    vFrete, 
-                    SUM(CASE WHEN [ItemCancelado] = 1 THEN 0 ELSE [Total_Item] END) AS Total_Item_SemItemCancelado, 
-                    Faturado, 
-                    Marketplace_IdPedido, 
-                    [Tipo de Cliente] AS TipoCliente, 
-                    CGC AS DocumentoDestinatario, 
+                    [Código da Venda],
+                    [Data da Venda] AS DataEmissao,
+                    [Código do Cliente],
+                    [Nome do Cliente],
+                    Nome,
+                    CASE 
+                        WHEN Cancelado = 1 THEN ''Cancelado'' 
+                        ELSE ''Válido'' 
+                    END AS Status,
+                    [Nº da Duplicata],
+                    LojaOrigem,
+                    Vendedor,
+                    Vendedor_Cliente,
+                    Comissao_Vendedor,
+                    Turno,
+                    UsuarioCaixaCod,
+                    SerieECF,
+                    Lancamento_Usuario,
+                    Lancamento_DataHora,
+                    Consignacao,
+                    Area,
+                    Bairro,
+                    Cidade,
+                    Obs,
+                    [Dt Cadastro],
+                    NumeroDAV,
+                    Setor,
+                    descontar AS DescontoV,
+                    QtdPessoas,
+                    QtdComandas,
+                    COUNT(CodigoItem) AS QuantProdutos,
+                    CONVERT(DECIMAL(10, 2), SUM(Total_Item)) AS ValorTotal,
+                    SUM(Quantidade_Item) AS QuantItens,
+                    Veiculo_Placa,
+                    TEFCV,
+                    CodigoOS,
+                    Origem,
+                    NFCe_NRO AS NumeroNFCe,
+                    NFCe_Serie AS Serie,
+                    NFCe_Chave AS ChaveAcesso,
+                    NFCe_TipoEmissao,
+                    NFCe_Data,
+                    Estornado,
+                    [Razão Social],
+                    NFeNum,
+                    NFSe_Numero,
+                    Impressa,
+                    Liberado,
+                    BoletoImpresso,
+                    PossuiEntrega,
+                    PossuiRetirada,
+                    Marketplace_Status,
+                    Marketplace_OrderNumber,
+                    SUM(vFreteItem) AS vFreteItem,
+                    vFrete,
+                    SUM(CASE 
+                            WHEN [ItemCancelado] = 1 THEN 0 
+                            ELSE [Total_Item] 
+                        END) AS Total_Item_SemItemCancelado,
+                    Faturado,
+                    Marketplace_IdPedido,
+                    [Tipo de Cliente] AS TipoCliente,
+                    CGC AS DocumentoDestinatario,
                     CFOP_D1 AS CFOP
-                FROM dbo.memoria_VendasTodas
+                FROM 
+                    dbo.memoria_VendasTodas
                 GROUP BY 
-                    [Código da Venda], 
-                    [Data da Venda], 
-                    [Código do Cliente], 
-                    [Nome do Cliente], 
-                    Nome, 
-                    Cancelado, 
-                    [Nº da Duplicata], 
-                    LojaOrigem, 
-                    Vendedor, 
-                    Vendedor_Cliente, 
-                    Comissao_Vendedor, 
-                    Turno, 
-                    UsuarioCaixaCod, 
-                    SerieECF, 
-                    Lancamento_Usuario, 
-                    Lancamento_DataHora, 
-                    Consignacao, 
-                    Area, 
-                    Bairro, 
-                    Cidade, 
-                    Obs, 
-                    [Dt Cadastro], 
-                    NumeroDAV, 
-                    Setor, 
-                    descontar, 
-                    QtdPessoas, 
-                    QtdComandas, 
-                    Veiculo_Placa, 
-                    TEFCV, 
-                    CodigoOS, 
-                    Origem, 
-                    NFCe_NRO, 
-                    NFCe_Serie, 
-                    NFCe_Chave, 
-                    NFCe_TipoEmissao, 
-                    NFCe_Data, 
-                    Estornado, 
-                    [Razão Social], 
-                    NFeNum, 
-                    NFSe_Numero, 
-                    Impressa, 
-                    Liberado, 
-                    BoletoImpresso, 
-                    PossuiEntrega, 
-                    PossuiRetirada, 
-                    Marketplace_Status, 
-                    Marketplace_OrderNumber, 
-                    vFrete, 
-                    Faturado, 
-                    Marketplace_IdPedido, 
-                    [Tipo de Cliente], 
-                    CGC, 
+                    [Código da Venda],
+                    [Data da Venda],
+                    [Código do Cliente],
+                    [Nome do Cliente],
+                    Nome,
+                    Cancelado,
+                    [Nº da Duplicata],
+                    LojaOrigem,
+                    Vendedor,
+                    Vendedor_Cliente,
+                    Comissao_Vendedor,
+                    Turno,
+                    UsuarioCaixaCod,
+                    SerieECF,
+                    Lancamento_Usuario,
+                    Lancamento_DataHora,
+                    Consignacao,
+                    Area,
+                    Bairro,
+                    Cidade,
+                    Obs,
+                    [Dt Cadastro],
+                    NumeroDAV,
+                    Setor,
+                    descontar,
+                    QtdPessoas,
+                    QtdComandas,
+                    Veiculo_Placa,
+                    TEFCV,
+                    CodigoOS,
+                    Origem,
+                    NFCe_NRO,
+                    NFCe_Serie,
+                    NFCe_Chave,
+                    NFCe_TipoEmissao,
+                    NFCe_Data,
+                    Estornado,
+                    [Razão Social],
+                    NFeNum,
+                    NFSe_Numero,
+                    Impressa,
+                    Liberado,
+                    BoletoImpresso,
+                    PossuiEntrega,
+                    PossuiRetirada,
+                    Marketplace_Status,
+                    Marketplace_OrderNumber,
+                    vFrete,
+                    Faturado,
+                    Marketplace_IdPedido,
+                    [Tipo de Cliente],
+                    CGC,
                     CFOP_D1
-                HAVING (NFCe_NRO > 0)
-            ');
+                HAVING 
+                    NFCe_NRO > 0;
+            ')
         END";
 
             try
@@ -565,10 +473,13 @@ namespace NFCeValidator.Data
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-                    SqlCommand cmd = new SqlCommand(verificaViewQuery, conn);
-                    cmd.Parameters.AddWithValue("@nomeView", nomeView); // Parâmetro para evitar SQL Injection
-                    cmd.ExecuteNonQuery();
+                    using (SqlCommand cmd = new SqlCommand(verificaViewQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@nomeView", nomeView); // Parâmetro para evitar SQL Injection
+                        cmd.ExecuteNonQuery();
+                    }
                 }
+
                 MessageBox.Show("View 'vw_NFCe' verificada e criada (se necessário).");
             }
             catch (Exception ex)
@@ -576,6 +487,163 @@ namespace NFCeValidator.Data
                 MessageBox.Show($"Erro ao verificar/criar a view: {ex.Message}");
             }
         }
-
     }
 }
+
+//        public void VerificarECriarView()
+//        {
+//            string connectionString = _connectionString; // Sua connection string
+//            string nomeView = "vw_NFCe";
+
+//            string verificaViewQuery = @"
+//        IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_NAME = @nomeView)
+//        BEGIN
+//            EXEC('
+//                CREATE VIEW [dbo].[vw_NFCe]
+//                    AS
+//                    SELECT 
+//                        [Código da Venda],
+//                        [Data da Venda] AS DataEmissao,
+//                        [Código do Cliente],
+//                        [Nome do Cliente],
+//                        Nome,
+//                        CASE 
+//                            WHEN Cancelado = 1 THEN 'Cancelado' 
+//                            ELSE 'Válido' 
+//                        END AS Status,
+//                        [Nº da Duplicata],
+//                        LojaOrigem,
+//                        Vendedor,
+//                        Vendedor_Cliente,
+//                        Comissao_Vendedor,
+//                        Turno,
+//                        UsuarioCaixaCod,
+//                        SerieECF,
+//                        Lancamento_Usuario,
+//                        Lancamento_DataHora,
+//                        Consignacao,
+//                        Area,
+//                        Bairro,
+//                        Cidade,
+//                        Obs,
+//                        [Dt Cadastro],
+//                        NumeroDAV,
+//                        Setor,
+//                        descontar AS DescontoV,
+//                        QtdPessoas,
+//                        QtdComandas,
+//                        COUNT(CodigoItem) AS QuantProdutos,
+//                        CONVERT(DECIMAL(10, 2), SUM(Total_Item)) AS ValorTotal,
+//                        SUM(Quantidade_Item) AS QuantItens,
+//                        Veiculo_Placa,
+//                        TEFCV,
+//                        CodigoOS,
+//                        Origem,
+//                        NFCe_NRO AS NumeroNFCe,
+//                        NFCe_Serie AS Serie,
+//                        NFCe_Chave AS ChaveAcesso,
+//                        NFCe_TipoEmissao,
+//                        NFCe_Data,
+//                        Estornado,
+//                        [Razão Social],
+//                        NFeNum,
+//                        NFSe_Numero,
+//                        Impressa,
+//                        Liberado,
+//                        BoletoImpresso,
+//                        PossuiEntrega,
+//                        PossuiRetirada,
+//                        Marketplace_Status,
+//                        Marketplace_OrderNumber,
+//                        SUM(vFreteItem) AS vFreteItem,
+//                        vFrete,
+//                        SUM(CASE 
+//                                WHEN [ItemCancelado] = 1 THEN 0 
+//                                ELSE [Total_Item] 
+//                            END) AS Total_Item_SemItemCancelado,
+//                        Faturado,
+//                        Marketplace_IdPedido,
+//                        [Tipo de Cliente] AS TipoCliente,
+//                        CGC AS DocumentoDestinatario,
+//                        CFOP_D1 AS CFOP
+//                    FROM 
+//                        dbo.memoria_VendasTodas
+//                    GROUP BY 
+//                        [Código da Venda],
+//                        [Data da Venda],
+//                        [Código do Cliente],
+//                        [Nome do Cliente],
+//                        Nome,
+//                        Cancelado,
+//                        [Nº da Duplicata],
+//                        LojaOrigem,
+//                        Vendedor,
+//                        Vendedor_Cliente,
+//                        Comissao_Vendedor,
+//                        Turno,
+//                        UsuarioCaixaCod,
+//                        SerieECF,
+//                        Lancamento_Usuario,
+//                        Lancamento_DataHora,
+//                        Consignacao,
+//                        Area,
+//                        Bairro,
+//                        Cidade,
+//                        Obs,
+//                        [Dt Cadastro],
+//                        NumeroDAV,
+//                        Setor,
+//                        descontar,
+//                        QtdPessoas,
+//                        QtdComandas,
+//                        Veiculo_Placa,
+//                        TEFCV,
+//                        CodigoOS,
+//                        Origem,
+//                        NFCe_NRO,
+//                        NFCe_Serie,
+//                        NFCe_Chave,
+//                        NFCe_TipoEmissao,
+//                        NFCe_Data,
+//                        Estornado,
+//                        [Razão Social],
+//                        NFeNum,
+//                        NFSe_Numero,
+//                        Impressa,
+//                        Liberado,
+//                        BoletoImpresso,
+//                        PossuiEntrega,
+//                        PossuiRetirada,
+//                        Marketplace_Status,
+//                        Marketplace_OrderNumber,
+//                        vFrete,
+//                        Faturado,
+//                        Marketplace_IdPedido,
+//                        [Tipo de Cliente],
+//                        CGC,
+//                        CFOP_D1
+//                    HAVING 
+//                        NFCe_NRO > 0;
+
+//            ');
+//        END";
+
+//            try
+//            {
+//                using (SqlConnection conn = new SqlConnection(connectionString))
+//                {
+//                    conn.Open();
+//                    SqlCommand cmd = new SqlCommand(verificaViewQuery, conn);
+//                    cmd.Parameters.AddWithValue("@nomeView", nomeView); // Parâmetro para evitar SQL Injection
+//                    cmd.ExecuteNonQuery();
+//                }
+//                MessageBox.Show("View 'vw_NFCe' verificada e criada (se necessário).");
+//            }
+//            catch (Exception ex)
+//            {
+//                MessageBox.Show($"Erro ao verificar/criar a view: {ex.Message}");
+//            }
+//        }
+
+//    }
+//}
