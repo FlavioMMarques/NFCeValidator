@@ -26,6 +26,7 @@ namespace NFCeValidator.Forms
             InicializarDatas();
             VerificarConfiguracao();
             CarregarEmpresas();
+            
         }
 
         private void InicializarDatas()
@@ -587,6 +588,7 @@ namespace NFCeValidator.Forms
                 MessageBox.Show("Configure a conexão com o banco de dados primeiro!", "Atenção",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 AbrirConfiguracoes();
+                
                 return;
             }
 

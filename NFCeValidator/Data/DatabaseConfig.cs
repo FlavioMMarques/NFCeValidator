@@ -6,10 +6,12 @@ using System.Xml;
 namespace NFCeValidator.Data
 {
     public class DatabaseConfig
+   
     {
         private static readonly string ConfigFilePath = Path.Combine(
             AppDomain.CurrentDomain.BaseDirectory,
             "config.json");
+        
 
         public class ConfigData
         {
@@ -130,5 +132,6 @@ namespace NFCeValidator.Data
         {
             return ConfigFilePath;
         }
+
     }
 }
